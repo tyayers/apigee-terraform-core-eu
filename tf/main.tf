@@ -10,18 +10,6 @@ variable "region" {
   type        = string
 }
 
-variable "network" {
-  description = "VPC network name, default is created if empty."
-  type        = string
-  default     = ""
-}
-
-variable "subnet" {
-  description = "VPC subnetwork name, default is created if empty."
-  type        = string
-  default     = null
-}
-
 locals {
   gcp_services = [
     "apigee.googleapis.com",
@@ -35,10 +23,6 @@ locals {
     "modelarmor.googleapis.com",
     "dlp.googleapis.com"
   ]
-
-  # network_id = (data.google_compute_network.existing_network[0].id)
-
-  # subnet_id = (data.google_compute_subnetwork.existing_subnet[0].id)
 
   data_collectors = {
     dc_ai_model = {
@@ -116,21 +100,6 @@ resource "google_project_service" "enabled_apis" {
   disable_on_destroy = false
 }
 
-# data "google_compute_network" "existing_network" {
-#   count      = (var.network != "") ? 1 : 0
-#   name       = var.network
-#   project    = var.project_id
-#   depends_on = [google_project_service.enabled_apis]
-# }
-
-# data "google_compute_subnetwork" "existing_subnet" {
-#   count      = (var.subnet != null) ? 1 : 0
-#   name       = var.subnet
-#   project    = var.project_id
-#   region     = var.region
-#   depends_on = [google_project_service.enabled_apis]
-# }
-
 /* Apigee */
 
 resource "google_apigee_organization" "apigee_org" {
@@ -149,20 +118,6 @@ resource "google_apigee_instance" "apigee" {
   org_id               = google_apigee_organization.apigee_org.id
   consumer_accept_list = [var.project_id]
 }
-
-# resource "google_apigee_instance_attachment" "dev_instance_attachment" {
-#   instance_id = google_apigee_instance.apigee.id
-#   environment = google_apigee_environment.dev_env.name
-# }
-
-# resource "google_compute_region_network_endpoint_group" "apigee_psc_neg" {
-#   name                  = "apigee-psc-neg"
-#   region                = var.region
-#   project               = var.project_id
-#   network_endpoint_type = "PRIVATE_SERVICE_CONNECT"
-#   psc_target_service    = google_apigee_instance.apigee.service_attachment
-#   network               = local.network_id
-# }
 
 resource "google_apigee_environment" "dev_env" {
   name         = "dev"
