@@ -124,6 +124,7 @@ resource "google_apigee_environment" "dev_env" {
   org_id       = google_apigee_organization.apigee_org.id
   display_name = "Development Environment"
   description  = "Development environment for API proxy deployments"
+  type         = "COMPREHENSIVE"
 }
 
 resource "google_apigee_envgroup" "dev_envgroup" {
@@ -134,6 +135,11 @@ resource "google_apigee_envgroup" "dev_envgroup" {
 
 resource "google_apigee_envgroup_attachment" "dev_envgroup_attachment" {
   envgroup_id = google_apigee_envgroup.dev_envgroup.id
+  environment = google_apigee_environment.dev_env.name
+}
+
+resource "google_apigee_instance_attachment" "dev_instance_attachment" {
+  instance_id = google_apigee_instance.apigee.id
   environment = google_apigee_environment.dev_env.name
 }
 
