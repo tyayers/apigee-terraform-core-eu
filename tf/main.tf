@@ -113,7 +113,7 @@ resource "google_apigee_organization" "apigee_org" {
 }
 
 resource "google_apigee_instance" "apigee" {
-  name                 = "apigee-psc-instance"
+  name                 = "apigee-${var.region}"
   location             = var.region
   org_id               = google_apigee_organization.apigee_org.id
   consumer_accept_list = [var.project_id]
