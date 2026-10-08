@@ -11,13 +11,18 @@ if [ "$TARGET" = "runtime" ]; then
   rm -rf ./tf/02-runtime/.terraform*
   rm -rf ./tf/02-runtime/terraform.tfstate*
   echo "Runtime state cleaned. Stage 01-org state remains protected."
+elif [ "$TARGET" = "all-in-one" ]; then
+  echo "Cleaning tf/03-all-in-one state and caches..."
+  rm -rf ./tf/03-all-in-one/.terraform ./tf/03-all-in-one/.terraform.lock.hcl ./tf/03-all-in-one/terraform.tfstate*
+  echo "All-in-one state cleaned."
 elif [ "$TARGET" = "all" ]; then
-  echo "WARNING: Cleaning BOTH org and runtime state."
-  echo "Deleting 01-org state while an Apigee Org exists in GCP will require manual state import."
+  echo "WARNING: Cleaning ALL stage states (01-org, 02-runtime, 03-all-in-one)."
+  echo "Deleting org state while an Apigee Org exists in GCP will require manual state import."
   rm -rf ./tf/01-org/.terraform ./tf/01-org/.terraform.lock.hcl ./tf/01-org/terraform.tfstate*
   rm -rf ./tf/02-runtime/.terraform ./tf/02-runtime/.terraform.lock.hcl ./tf/02-runtime/terraform.tfstate*
+  rm -rf ./tf/03-all-in-one/.terraform ./tf/03-all-in-one/.terraform.lock.hcl ./tf/03-all-in-one/terraform.tfstate*
   rm -rf ./tf/.terraform ./tf/.terraform.lock.hcl ./tf/terraform.tfstate*
 else
-  echo "Usage: $0 [runtime|all]"
+  echo "Usage: $0 [runtime|all-in-one|all]"
   exit 1
 fi

@@ -17,10 +17,15 @@ tf/
 │   ├── variables.tf
 │   └── outputs.tf         # org_id, project_id, region
 │
-└── 02-runtime/            # Stage 2: Runtime, Networking & Load Balancing
-    ├── main.tf            # Instance, Env, PSC NEG, Certs, Regional ALB (ILB/XLB/None)
-    ├── variables.tf       # project_id, region, lb_type, network, subnet, domain
-    └── outputs.tf         # lb_type, lb_ip_address, dns_authorization_record
+├── 02-runtime/            # Stage 2: Runtime, Networking & Load Balancing
+│   ├── main.tf            # Instance, Env, PSC NEG, Certs, Regional ALB (ILB/XLB/None)
+│   ├── variables.tf       # project_id, region, lb_type, network, subnet, domain
+│   └── outputs.tf         # lb_type, lb_ip_address, dns_authorization_record
+│
+└── 03-all-in-one/         # Unified: Single-stage deployment
+    ├── main.tf            # Org + APIs + Runtime + Load Balancing
+    ├── variables.tf       # All variables combined
+    └── outputs.tf         # Combined outputs
 ```
 
 - **Apigee X Organization (`01-org`)**: PAYG organization using the EU custom endpoint (`https://eu-apigee.googleapis.com/v1/`).
@@ -148,6 +153,30 @@ terraform -chdir=tf/02-runtime apply \
   -var "region=$GOOGLE_CLOUD_LOCATION" \
   -var "lb_type=none"
 ```
+
+---
+
+## All-in-One Template (`tf/03-all-in-one`)
+
+For automated pipelines or environments where a single-stage deployment is preferred, `tf/03-all-in-one` combines Stage 1 and Stage 2 into a single unified Terraform root module containing:
+- `main.tf`: Enables required APIs, creates the Apigee Org (protected by `prevent_destroy`), Apigee runtime instance, environments, Certificate Manager certs, PSC NEG, and regional load balancer.
+- `variables.tf`: Unified variable definitions (`project_id`, `region`, `lb_type`, `create_network`, `network`, `subnet`, etc.).
+- `outputs.tf`: Combined outputs (`org_id`, `lb_ip_address`, `dns_authorization_record`, `apigee_instance_id`, etc.).
+
+### Deploy All-in-One
+
+```sh
+terraform -chdir=tf/03-all-in-one init
+terraform -chdir=tf/03-all-in-one apply \
+  -var "project_id=$GOOGLE_CLOUD_PROJECT" \
+  -var "region=$GOOGLE_CLOUD_LOCATION" \
+  -var "create_network=true" \
+  -var "lb_type=ilb" \
+  -var "domain=api.example.com"
+```
+
+> [!NOTE]
+> The Apigee Organization in `03-all-in-one` is protected with `lifecycle { prevent_destroy = true }`. If you need to destroy and recreate the runtime frequently without risking the 24-hour org deletion lockout, use the two-stage approach (`01-org` + `02-runtime`) instead.
 
 ---
 
